@@ -1,16 +1,14 @@
-import uvicorn
+import os
+
 from fastapi import FastAPI
+from openai import OpenAI
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
+from .context import pack_snippets
 from .embeddings import embed_text
 from .retrieval import search_text, search_figures
-from .context import pack_snippets
-from openai import OpenAI
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
 app = FastAPI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 ANSWER_MODEL = os.getenv("ANSWER_MODEL", "gpt-4o")
@@ -68,10 +66,3 @@ def query(req: QueryReq):
         "text_hits": text_hits,
         "figure_hits": fig_hits,
     }
-
-# 👇 Add this block to run inside IDE
-if __name__ == "__main__":
-    uvicorn.run(
-        "rag.main:app",   # module:variable (adjust if filename/module differs)
-        reload=True
-    )
