@@ -25,7 +25,7 @@ def ingest_pdf(path: str):
                 insert(
                     "INSERT INTO chunks(chunk_id, doc_id, page, section_path, text, embedding, meta) "
                     "VALUES (%s,%s,%s,%s,%s,%s,%s)",
-                    (uuid.uuid4(), doc_id, pnum, None, chunk, emb, None)
+                    (str(uuid.uuid4()), str(doc_id), pnum, None, chunk, emb, None)
                 )
 
 
