@@ -1,13 +1,13 @@
+import base64
 import os
 from openai import OpenAI
 import json
 
 from openai.types.chat import ChatCompletionDeveloperMessageParam, ChatCompletionUserMessageParam, \
-    ChatCompletionSystemMessageParam
+    ChatCompletionSystemMessageParam, ChatCompletionContentPartTextParam, ChatCompletionContentPartImageParam
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 VLM_MODEL = os.getenv("VLM_MODEL", "gpt-4o")
-
 
 CAPTION_PROMPT = (
     "You are an expert technical captioner. Extract visible text verbatim, "
@@ -16,16 +16,19 @@ CAPTION_PROMPT = (
     "text_in_image (array), entities (array of strings), tags (array of strings)."
 )
 
+
 def caption_image_png(png_bytes: bytes) -> dict:
+    b64_image = base64.b64encode(png_bytes).decode("utf-8")
+    data_uri = f"data:image/png;base64,{b64_image}"
     resp = client.chat.completions.create(
         model=VLM_MODEL,
-        messages= [
+        messages=[
             ChatCompletionSystemMessageParam(role="system", content=CAPTION_PROMPT),
             ChatCompletionUserMessageParam(
                 role="user",
                 content=[
-                    {"type": "input_text", "text": "Caption this image as JSON."},
-                    {"type": "input_image", "image_data": png_bytes}
+                    ChatCompletionContentPartTextParam(type="text", text= "Caption this image as JSON."),
+                    ChatCompletionContentPartImageParam(type="image_url", image_url={"url": data_uri, "detail": "high"})
                 ]
             )
 
