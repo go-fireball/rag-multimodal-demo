@@ -9,20 +9,22 @@ from .chunking import split_text_into_chunks
 from .caption_vlm import caption_image_png
 import sys
 
-
 # --- Storage helpers (thumbs). Replace with S3 if needed.
 PUBLIC_THUMBS = Path("samples/images")
 PUBLIC_THUMBS.mkdir(parents=True, exist_ok=True)
 
+
 def insert(sql, params):
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(sql, params)
+
 
 def save_thumb(pix: fitz.Pixmap, name: str) -> str:
     # Save as PNG under web/public to be served by Nuxt dev server
     out = PUBLIC_THUMBS / f"{name}.png"
     pix.save(str(out))
     return f"/thumbs/{name}.png"
+
 
 def ingest_pdf(path: str):
     doc_id = uuid.uuid4()
@@ -61,7 +63,6 @@ def ingest_pdf(path: str):
                 pix = page.get_pixmap()  # rasterize the page into a Pixmap
                 thumb_uri = save_thumb(pix, f"{doc_id}_{pnum}_{idx}")
 
-
                 # Caption via VLM (JSON structure) directly from the embedded image bytes
                 cap = {}
                 try:
@@ -80,8 +81,9 @@ def ingest_pdf(path: str):
                 emb = embed_text(caption_dense or cap.get("global_caption_short", ""))
                 insert(
                     """
-                    INSERT INTO figures(figure_id, doc_id, page, bbox, caption_short, caption_dense, ocr_text, thumb_uri, embedding, meta)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    INSERT INTO figures(figure_id, doc_id, page, bbox, caption_short, caption_dense, ocr_text,
+                                        thumb_uri, embedding, meta)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         str(uuid.uuid4()),
