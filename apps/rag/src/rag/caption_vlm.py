@@ -1,9 +1,9 @@
 import base64
-import os
-from openai import OpenAI
 import json
+import os
 
-from openai.types.chat import ChatCompletionDeveloperMessageParam, ChatCompletionUserMessageParam, \
+from openai import OpenAI
+from openai.types.chat import ChatCompletionUserMessageParam, \
     ChatCompletionSystemMessageParam, ChatCompletionContentPartTextParam, ChatCompletionContentPartImageParam
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
