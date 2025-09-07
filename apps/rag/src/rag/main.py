@@ -1,15 +1,35 @@
+import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
+
 from .embeddings import embed_text
 from .retrieval import search_text, search_figures
 from .context import pack_snippets
 from openai import OpenAI
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 ANSWER_MODEL = os.getenv("ANSWER_MODEL", "gpt-4o")
 
+# Allow your web app origins (dev examples below)
+origins = [
+    "http://localhost:3000",   # Nuxt/Vite/Next dev
+    "http://127.0.0.1:3000",
+    # "https://your-prod-domain.com",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,             # or ["*"] for all
+    allow_credentials=True,
+    allow_methods=["*"],               # includes OPTIONS automatically
+    allow_headers=["*"],               # e.g., "Authorization", "Content-Type"
+    max_age=86400,                     # cache preflight (seconds)
+)
 
 class QueryReq(BaseModel):
     query: str
@@ -25,7 +45,9 @@ def health():
 @app.post("/query")
 def query(req: QueryReq):
     qvec = embed_text(req.query)
+
     text_hits = search_text(qvec, k=req.k)
+
     fig_hits = search_figures(qvec, k=min(5, req.k)) if req.want_figures else []
 
     context = pack_snippets(text_hits, fig_hits)
@@ -46,3 +68,10 @@ def query(req: QueryReq):
         "text_hits": text_hits,
         "figure_hits": fig_hits,
     }
+
+# 👇 Add this block to run inside IDE
+if __name__ == "__main__":
+    uvicorn.run(
+        "rag.main:app",   # module:variable (adjust if filename/module differs)
+        reload=True
+    )

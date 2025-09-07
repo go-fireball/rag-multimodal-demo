@@ -1,6 +1,6 @@
 <template>
   <main class="p-6 max-w-3xl mx-auto space-y-4">
-    <h1 class="text-2xl font-bold">Multimodal RAG PoC</h1>
+    <h1 class="text-2xl font-bold">Multimodal RAG Demo</h1>
     <form @submit.prevent="run">
       <input v-model="q" class="border p-2 w-full" placeholder="Ask a question"/>
       <label class="block mt-2"><input type="checkbox" v-model="wantFigures"/> Include figures</label>

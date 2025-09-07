@@ -24,4 +24,4 @@ def search_figures(query_vec: list[float], k: int = 10):
           """
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(sql, (query_vec, query_vec, k))
-    return cur.fetchall()
+        return cur.fetchall()
